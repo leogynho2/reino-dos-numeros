@@ -1,0 +1,73 @@
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+const PORT = process.env.PORT || 4000;
+
+// Middleware
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Servir socket.io corretamente
+app.use('/socket.io', express.static(path.join(__dirname, '../node_modules/socket.io/client-dist')));
+
+// Rotas básicas
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'Reino dos Números funcionando',
+        timestamp: new Date(),
+        version: '1.0.0'
+    });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Configuração básica do Socket.io
+io.on('connection', (socket) => {
+    console.log('Usuário conectado:', socket.id);
+    
+    socket.on('player:join', (data) => {
+        console.log('Jogador entrou:', data.name);
+        socket.emit('player:joined', { 
+            message: 'Bem-vindo ao Reino dos Números!',
+            player: { name: data.name, id: socket.id }
+        });
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('Usuário desconectado:', socket.id);
+    });
+});
+
+// Inicialização segura
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🎮 Reino dos Números rodando na porta ${PORT}`);
+    console.log(`🌐 Acesse: http://localhost:${PORT}`);
+    console.log(`📊 Health: http://localhost:${PORT}/api/health`);
+}).on('error', (err) => {
+    console.error('❌ Erro ao iniciar servidor:', err.message);
+    process.exit(1);
+});
+
+// Tratamento de erros
+process.on('uncaughtException', (err) => {
+    console.error('❌ Erro não tratado:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Promise rejeitada:', reason);
+});

@@ -1,0 +1,154 @@
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const path = require('path');
+
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+const PORT = process.env.PORT || 4000;
+
+// Middleware
+app.use(express.json());
+
+// Servir arquivos estáticos CORRETAMENTE
+app.use(express.static(path.join(__dirname, '../public'), {
+    dotfiles: 'allow',
+    index: false,
+    setHeaders: (res, path) => {
+        // Configurar headers para arquivos de imagem
+        if (path.endsWith('.png')) {
+            res.setHeader('Content-Type', 'image/png');
+            res.setHeader('Cache-Control', 'public, max-age=3600');
+        }
+        if (path.endsWith('.ico')) {
+            res.setHeader('Content-Type', 'image/x-icon');
+        }
+    }
+}));
+
+// Servir socket.io corretamente
+app.use('/socket.io', express.static(path.join(__dirname, '../node_modules/socket.io/client-dist')));
+
+// Rotas básicas
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'Reino dos Números funcionando',
+        timestamp: new Date(),
+        version: '1.0.0'
+    });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Dados em memória
+const players = new Map();
+const npcs = [
+    { id: 1, name: 'Matemago', map: 'map-city', x: 600, y: 400, active: true },
+    { id: 2, name: 'Calculista', map: 'map-city', x: 700, y: 500, active: true },
+    { id: 3, name: 'Geometro', map: 'map-forest', x: 800, y: 600, active: true }
+];
+
+const missions = [
+    { id: 1, code: 'M001', title: 'Primeiro Contato', description: 'Fale com 1 NPC', type: 'talk_npc', target: 1, reward_exp: 10, reward_coins: 10 },
+    { id: 2, code: 'M002', title: 'Aquecimento Numérico', description: 'Acerte 3 perguntas', type: 'correct_answers', target: 3, reward_exp: 25, reward_coins: 20 },
+    { id: 3, code: 'M003', title: 'Explorador', description: 'Entre no portal da floresta', type: 'enter_portal', target: 1, reward_exp: 15, reward_coins: 0 }
+];
+
+// Configuração do Socket.io
+io.on('connection', (socket) => {
+    console.log('Usuário conectado:', socket.id);
+    
+    socket.on('player:join', async (data) => {
+        try {
+            console.log('Jogador tentando entrar:', data.name);
+            
+            const playerData = {
+                id: socket.id,
+                name: data.name,
+                level: 1,
+                exp: 0,
+                hp: 100,
+                max_hp: 100,
+                coins: 0,
+                wins: 0,
+                losses: 0,
+                map: 'map-city',
+                x: 400,
+                y: 300
+            };
+            
+            players.set(socket.id, playerData);
+            
+            socket.emit('player:joined', {
+                player: playerData,
+                npcs: npcs,
+                missions: missions.map(m => ({ ...m, progress: 0, status: 'active' })),
+                otherPlayers: Array.from(players.values()).filter(p => p.id !== socket.id)
+            });
+            
+            socket.broadcast.emit('player:entered', {
+                id: socket.id,
+                name: data.name,
+                map: 'map-city',
+                x: 400,
+                y: 300
+            });
+            
+        } catch (error) {
+            console.error('Erro no player:join:', error);
+            socket.emit('error', { message: 'Erro ao entrar no jogo' });
+        }
+    });
+    
+    socket.on('player:move', (data) => {
+        const player = players.get(socket.id);
+        if (player) {
+            player.x = data.x;
+            player.y = data.y;
+            player.map = data.map;
+            
+            socket.broadcast.emit('player:moved', {
+                id: socket.id,
+                x: data.x,
+                y: data.y,
+                map: data.map
+            });
+        }
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('Usuário desconectado:', socket.id);
+        players.delete(socket.id);
+        socket.broadcast.emit('player:left', { id: socket.id });
+    });
+});
+
+// Inicialização
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🎮 Reino dos Números rodando na porta ${PORT}`);
+    console.log(`🌐 Acesse: http://localhost:${PORT}`);
+    console.log(`📊 Health: http://localhost:${PORT}/api/health`);
+    console.log(`🖼️  Assets: http://localhost:${PORT}/assets/`);
+}).on('error', (err) => {
+    console.error('❌ Erro ao iniciar servidor:', err.message);
+    process.exit(1);
+});
+
+// Tratamento de erros
+process.on('uncaughtException', (err) => {
+    console.error('❌ Erro não tratado:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Promise rejeitada:', reason);
+});

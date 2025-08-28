@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reino dos Números</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-top">
+            <div id="player-stats">
+                <span id="player-name"></span> | 
+                Nível <span id="player-level">1</span> | 
+                EXP: <span id="player-exp">0</span> | 
+                HP: <span id="player-hp">100</span>/<span id="player-max-hp">100</span> | 
+                W/L: <span id="player-wins">0</span>/<span id="player-losses">0</span> | 
+                Moedas: <span id="player-coins">0</span>
+            </div>
+            <button id="btn-missions">Missões (M)</button>
+            <button id="btn-professor">Professor</button>
+        </div>
+        
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="login-modal" class="modal">
+            <div class="modal-content">
+                <h2>Entrar no Reino dos Números</h2>
+                <input type="text" id="player-name-input" placeholder="Digite seu nome" maxlength="20">
+                <button id="btn-join">Entrar</button>
+            </div>
+        </div>
+        
+        <div id="battle-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Batalha Matemática</h2>
+                <p id="battle-npc-name"></p>
+                <div id="battle-question"></div>
+                <input type="text" id="battle-answer" placeholder="Sua resposta">
+                <button id="btn-battle-submit">Responder</button>
+                <div id="battle-result"></div>
+            </div>
+        </div>
+        
+        <div id="missions-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Missões</h2>
+                <div id="missions-list"></div>
+                <button id="btn-close-missions">Fechar</button>
+            </div>
+        </div>
+        
+        <div id="professor-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Acesso Professor</h2>
+                <input type="password" id="professor-password" placeholder="Senha">
+                <button id="btn-professor-login">Entrar</button>
+                <div id="professor-error"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carregar socket.io localmente -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+    <script src="net.js"></script>
+</body>
+</html>
