@@ -690,53 +690,53 @@ class Game {
         return map;
     }
     
-generateForestMap() {
-    const width = 64;
-    const height = 64;
-    
-    const map = {
-        width: width,
-        height: height,
-        tiles: [],
-        collisions: [],
-        portals: [
-            { x: 100, y: 100, targetMap: 'map-city', targetX: 800, targetY: 600 }
-        ]
-    };
-    
-    for (let y = 0; y < height; y++) {
-        map.tiles[y] = [];
-        map.collisions[y] = [];
-        
-        for (let x = 0; x < width; x++) {
-            map.tiles[y][x] = 0;
-            map.collisions[y][x] = 0;
-            
-            if (Math.random() < 0.1) {
-                map.tiles[y][x] = 3;
-                map.collisions[y][x] = 1;
-            }
-            
-            if (Math.random() < 0.03) {
-                const lakeSize = Math.floor(Math.random() * 3) + 2;
-                for (let ly = y; ly < y + lakeSize && ly < height; ly++) {
-                    if (!map.tiles[ly]) {
-                        map.tiles[ly] = [];
-                        map.collisions[ly] = [];
-                    }
-                    
-                    for (let lx = x; lx < x + lakeSize && lx < width; lx++) {
-                        map.tiles[ly][lx] = 1;
-                        map.collisions[ly][lx] = 1;
+    generateForestMap() {
+        const width = 64;
+        const height = 64;
+
+        const map = {
+            width: width,
+            height: height,
+            tiles: [],
+            collisions: [],
+            portals: [
+                { x: 100, y: 100, targetMap: 'map-city', targetX: 800, targetY: 600 }
+            ]
+        };
+
+        for (let y = 0; y < height; y++) {
+            map.tiles[y] = [];
+            map.collisions[y] = [];
+
+            for (let x = 0; x < width; x++) {
+                map.tiles[y][x] = 0;
+                map.collisions[y][x] = 0;
+
+                if (Math.random() < 0.1) {
+                    map.tiles[y][x] = 3;
+                    map.collisions[y][x] = 1;
+                }
+
+                if (Math.random() < 0.03) {
+                    const lakeSize = Math.floor(Math.random() * 3) + 2;
+                    for (let ly = y; ly < y + lakeSize && ly < height; ly++) {
+                        if (!map.tiles[ly]) {
+                            map.tiles[ly] = [];
+                            map.collisions[ly] = [];
+                        }
+
+                        for (let lx = x; lx < x + lakeSize && lx < width; lx++) {
+                            map.tiles[ly][lx] = 1;
+                            map.collisions[ly][lx] = 1;
+                        }
                     }
                 }
             }
         }
+
+        return map;
     }
-    
-    return map;
-}
-    
+
     update(deltaTime) {
         if (!this.player) return;
         
