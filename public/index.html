@@ -36,6 +36,16 @@
                 <h2>Batalha Matemática</h2>
                 <p id="battle-npc-name"></p>
                 <div id="battle-question"></div>
+                <div id="battle-hp-bars">
+                    <div class="hp-bar-container">
+                        <div id="battle-npc-hp" class="hp-bar-fill npc"></div>
+                        <span id="battle-npc-hp-text" class="hp-bar-text"></span>
+                    </div>
+                    <div class="hp-bar-container">
+                        <div id="battle-player-hp" class="hp-bar-fill player"></div>
+                        <span id="battle-player-hp-text" class="hp-bar-text"></span>
+                    </div>
+                </div>
                 <input type="text" id="battle-answer" placeholder="Sua resposta">
                 <button id="btn-battle-submit">Responder</button>
                 <div id="battle-result"></div>
