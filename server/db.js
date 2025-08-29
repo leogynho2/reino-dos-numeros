@@ -157,11 +157,12 @@ class Database {
 
     respawnNpcs() {
         return new Promise((resolve, reject) => {
-            const sql = `UPDATE npcs SET active = 1 
-                        WHERE active = 0 AND datetime(last_defeated_at, '+' || respawn_sec || ' seconds') <= datetime('now')`;
-            this.db.run(sql, (err) => {
+            const sql = `UPDATE npcs SET active = 1, last_defeated_at = NULL
+                        WHERE active = 0 AND datetime(last_defeated_at, '+' || respawn_sec || ' seconds') <= datetime('now')
+                        RETURNING id, map`;
+            this.db.all(sql, [], (err, rows) => {
                 if (err) reject(err);
-                else resolve();
+                else resolve(rows);
             });
         });
     }
