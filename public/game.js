@@ -248,7 +248,11 @@ class Game {
     hideBattleModal() {
         document.getElementById('battle-modal').classList.add('hidden');
     }
-    
+
+    showDialogue(message) {
+        alert(message);
+    }
+
     toggleMissionsModal() {
         const modal = document.getElementById('missions-modal');
         if (modal.classList.contains('hidden')) {
@@ -353,7 +357,11 @@ class Game {
         this.socket.on('npc:respawned', (data) => {
             this.handleNpcRespawned(data);
         });
-        
+
+        this.socket.on('npc:dialogue', (data) => {
+            this.showDialogue(data.dialogue);
+        });
+
         this.socket.on('error', (data) => {
             alert(`Erro: ${data.message}`);
         });
