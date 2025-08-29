@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reino dos Números</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+      .ui-panel{position:absolute;top:10px;right:10px;background:#111a;border:1px solid #445;padding:10px;border-radius:8px}
+      .hidden{display:none}
+      .hpbar{width:48px;height:6px;background:#444;outline:1px solid #111}
+      .hpbar > div{height:100%}
+    </style>
 </head>
 <body>
     <div id="game-container">
@@ -57,6 +63,29 @@
                 <button id="btn-professor-login">Entrar</button>
                 <div id="professor-error"></div>
             </div>
+        </div>
+
+        <!-- Painel de Missões -->
+        <div id="ui-quests" class="ui-panel hidden">
+          <h3>Missões</h3>
+          <div id="quests-active"></div>
+          <h4>Concluídas</h4>
+          <div id="quests-done"></div>
+        </div>
+
+        <!-- UI de Duelo -->
+        <div id="ui-duel" class="ui-panel hidden">
+          <h3>Duelo</h3>
+          <div id="duel-status"></div>
+          <div id="duel-question"></div>
+          <div id="duel-choices"></div>
+          <div id="duel-score"></div>
+        </div>
+
+        <!-- Cabeçalho da Pergunta (NPC HP) -->
+        <div id="quiz-header" class="hidden">
+          <span id="quiz-npc-name"></span>
+          <span id="quiz-npc-hp"></span>
         </div>
     </div>
 

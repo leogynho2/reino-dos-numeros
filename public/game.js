@@ -1,4 +1,10 @@
 // /public/game.js
+const SHOW_SPAWN_MARKER = false; // desativa marcador no início
+
+function drawSpawnMarker(ctx) {
+    if (!SHOW_SPAWN_MARKER) return;
+    // marcador opcional não desenhado quando flag é false
+}
 class Game {
     constructor() {
         this.canvas = document.getElementById('game-canvas');
@@ -353,6 +359,53 @@ class Game {
         this.socket.on('npc:respawned', (data) => {
             this.handleNpcRespawned(data);
         });
+
+        this.socket.on('npc:hp', (data) => {
+            const npc = this.npcs.get(data.npcId);
+            if (npc) {
+                npc.hp = data.hp;
+                npc.hpMax = data.hpMax;
+                if (this.currentBattle && this.currentBattle.npcId === data.npcId) {
+                    updateQuizNpcHp(npc);
+                }
+            }
+        });
+
+        this.socket.on('player:hp', (data) => {
+            if (this.player) {
+                this.player.hp = data.hp;
+                this.player.max_hp = data.hpMax;
+                document.getElementById('player-hp').textContent = data.hp;
+                document.getElementById('player-max-hp').textContent = data.hpMax;
+            }
+        });
+
+        this.socket.on('quest:list', (state) => {
+            quests.active = state.active;
+            quests.done = state.done;
+            renderQuests();
+        });
+        this.socket.on('quest:update', (state) => {
+            quests.active = state.active;
+            quests.done = state.done;
+            renderQuests();
+        });
+
+        this.socket.on('duel:invited', (data) => {
+            const ok = confirm(`Convite de duelo de ${data.fromName}. Aceitar?`);
+            this.socket.emit(ok ? 'duel:accept' : 'duel:reject', data.fromId);
+        });
+        this.socket.on('duel:question', (data) => {
+            showDuelUI();
+            renderDuelQuestion(data.text, data.choices, (choiceIdx) => this.socket.emit('duel:answer', { qid: data.qid, choiceIdx }));
+        });
+        this.socket.on('duel:score', (data) => {
+            document.getElementById('duel-score').textContent = `${data.you} x ${data.opponent}`;
+        });
+        this.socket.on('duel:end', (data) => {
+            document.getElementById('duel-status').textContent = data.youWon ? 'Vitória!' : 'Derrota!';
+            hideDuelUIAfter(2000);
+        });
         
         this.socket.on('error', (data) => {
             alert(`Erro: ${data.message}`);
@@ -419,6 +472,8 @@ class Game {
     handleBattleStart(data) {
         this.showBattleModal(data.npcName, data.question);
         this.currentBattle = data;
+        const npc = this.npcs.get(data.npcId);
+        if (npc) openQuizUI(npc);
     }
     
     handleBattleResult(data) {
@@ -951,6 +1006,15 @@ generateForestMap() {
                 spriteCol * this.tileSize, spriteRow * this.tileSize, this.tileSize, this.tileSize,
                 screenX, screenY, this.tileSize, this.tileSize
             );
+
+            // barra de HP
+            const w = 24, h = 4;
+            const x = screenX + this.tileSize / 2 - w / 2;
+            const y = screenY - 8;
+            const pct = Math.max(0, Math.min(1, (npc.hp || 0) / (npc.hpMax || 1)));
+            this.ctx.fillStyle = '#000'; this.ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+            this.ctx.fillStyle = '#444'; this.ctx.fillRect(x, y, w, h);
+            this.ctx.fillStyle = '#0f0'; this.ctx.fillRect(x, y, Math.floor(w * pct), h);
         }
     }
     
@@ -1053,7 +1117,52 @@ generateForestMap() {
     }
 }
 
+function openQuizUI(npc){
+    document.getElementById('quiz-header').classList.remove('hidden');
+    document.getElementById('quiz-npc-name').textContent = npc.name || 'Desafiante';
+    updateQuizNpcHp(npc);
+}
+function updateQuizNpcHp(npc){
+    const el = document.getElementById('quiz-npc-hp');
+    el.textContent = `HP: ${Math.max(0, npc.hp)}/${npc.hpMax}`;
+}
+
+const quests = {active:[], done:[]};
+function toggleQuestPanel(){
+    const el = document.getElementById('ui-quests');
+    el.classList.toggle('hidden');
+    if(!el.classList.contains('hidden') && window.game?.socket){
+        window.game.socket.emit('quest:list');
+    }
+}
+function renderQuests(){
+    const a = document.getElementById('quests-active');
+    a.innerHTML='';
+    quests.active.forEach(q=>{
+        const p=Math.round(100*q.progress/q.count);
+        const div=document.createElement('div');
+        div.innerHTML=`<b>${q.title}</b><br>${q.desc}<br>${q.progress}/${q.count} (${p}%)`+(q.status==='done'?` <button data-id="${q.id}" class="claim">Resgatar</button>`:'');
+        a.appendChild(div);
+    });
+    const d=document.getElementById('quests-done');
+    d.innerHTML='';
+    quests.done.forEach(q=>{const e=document.createElement('div');e.textContent=q.title;d.appendChild(e);});
+    a.querySelectorAll('.claim').forEach(btn=>{btn.onclick=()=>window.game.socket.emit('quest:claim', btn.dataset.id);});
+}
+function inviteNearestPlayer(){
+    // implementação simples pode ser feita posteriormente
+}
+function showDuelUI(){ document.getElementById('ui-duel').classList.remove('hidden'); }
+function hideDuelUIAfter(ms){ setTimeout(()=>document.getElementById('ui-duel').classList.add('hidden'), ms); }
+function renderDuelQuestion(text,choices,cb){
+    const qEl=document.getElementById('duel-question'); qEl.textContent=text;
+    const cEl=document.getElementById('duel-choices'); cEl.innerHTML='';
+    choices.forEach((ch,idx)=>{const b=document.createElement('button');b.textContent=ch;b.onclick=()=>cb(idx);cEl.appendChild(b);});
+}
+window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='j')toggleQuestPanel();});
+window.addEventListener('keydown',e=>{if(e.key.toLowerCase()==='k')inviteNearestPlayer();});
+
 // Inicializar o jogo quando a página carregar
 window.addEventListener('load', () => {
-    new Game();
+    window.game = new Game();
 });
