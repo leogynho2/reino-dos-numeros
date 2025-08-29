@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS npcs (
     map TEXT NOT NULL,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    respawn_sec INTEGER DEFAULT 300,
+    respawn_sec INTEGER DEFAULT 180,
     active BOOLEAN DEFAULT 1,
     last_defeated_at DATETIME
 );
@@ -108,9 +108,9 @@ INSERT OR IGNORE INTO missions (code, title, description, type, target, reward_e
 
 -- Inserir NPCs iniciais
 INSERT OR IGNORE INTO npcs (name, map, x, y, respawn_sec) VALUES
-('Matemago', 'map-city', 600, 400, 300),
-('Calculista', 'map-city', 700, 500, 300),
-('Geometro', 'map-forest', 800, 600, 300);
+('Matemago', 'map-city', 600, 400, 180),
+('Calculista', 'map-city', 700, 500, 180),
+('Geometro', 'map-forest', 800, 600, 180);
 
 -- Inserir professor padrão (senha: professor123)
 INSERT OR IGNORE INTO professors (username, password_hash) VALUES

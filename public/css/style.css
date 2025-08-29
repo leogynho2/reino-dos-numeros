@@ -104,6 +104,23 @@ button:hover {
     font-size: 16px;
 }
 
+/* Barra de vida do NPC */
+.health-bar {
+    width: 100%;
+    height: 20px;
+    background: #555;
+    border: 1px solid #333;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.health-bar-inner {
+    height: 100%;
+    background: #27ae60;
+    width: 100%;
+    border-radius: 3px;
+}
+
 /* Ajuda de controles */
 #controls-help {
     position: absolute;

@@ -67,7 +67,9 @@ class BattleSystem {
                 npcDefeated: false,
                 playerDefeated: false,
                 expGain: 0,
-                coinGain: 0
+                coinGain: 0,
+                playerDamage: 0,
+                enemyDamage: 0
             };
             
             if (isCorrect) {
@@ -76,6 +78,7 @@ class BattleSystem {
                 result.npcHp = Math.max(0, battleData.npc_hp - damage);
                 result.expGain = this.calculateExpGain();
                 result.coinGain = this.config.coinReward;
+                result.playerDamage = damage;
                 
                 // Atualizar experiência e moedas do jogador
                 const newExp = player.exp + result.expGain;
@@ -119,6 +122,7 @@ class BattleSystem {
                 // Jogador errou - sofre dano
                 const damage = this.calculateEnemyDamage(player.level);
                 result.playerHp = Math.max(0, battleData.player_hp - damage);
+                result.enemyDamage = damage;
                 
                 // Atualizar HP do jogador
                 await db.updatePlayerStats(userId, { hp: result.playerHp });

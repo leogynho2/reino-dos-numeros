@@ -235,12 +235,13 @@ class Game {
         document.getElementById('login-modal').classList.add('hidden');
     }
     
-    showBattleModal(npcName, question) {
+    showBattleModal(npcName, question, npcHp, npcMaxHp) {
         document.getElementById('battle-npc-name').textContent = `Desafio de ${npcName}`;
         document.getElementById('battle-question').textContent = question;
         document.getElementById('battle-answer').value = '';
         document.getElementById('battle-result').textContent = '';
         document.getElementById('battle-result').className = '';
+        this.updateNpcHealthBar(npcHp, npcMaxHp);
         document.getElementById('battle-modal').classList.remove('hidden');
         document.getElementById('battle-answer').focus();
     }
@@ -417,7 +418,7 @@ class Game {
     }
     
     handleBattleStart(data) {
-        this.showBattleModal(data.npcName, data.question);
+        this.showBattleModal(data.npcName, data.question, data.npcHp, data.npcMaxHp);
         this.currentBattle = data;
     }
     
@@ -431,6 +432,10 @@ class Game {
             resultEl.textContent = `Resposta incorreta! Você sofreu ${data.enemyDamage || 0} de dano.`;
             resultEl.className = 'incorrect';
         }
+
+        // Atualizar barra de vida do NPC
+        this.currentBattle.npcHp = data.npcHp;
+        this.updateNpcHealthBar(data.npcHp, this.currentBattle.npcMaxHp);
         
         // Atualizar stats do jogador
         if (this.player) {
@@ -491,7 +496,14 @@ class Game {
             npc.active = true;
         }
     }
-    
+
+    updateNpcHealthBar(hp, maxHp) {
+        const bar = document.getElementById('npc-health-inner');
+        if (!bar) return;
+        const percent = Math.max(0, (hp / maxHp) * 100);
+        bar.style.width = `${percent}%`;
+    }
+
     submitBattleAnswer() {
         if (!this.currentBattle) return;
         
@@ -724,7 +736,7 @@ generateForestMap() {
                         map.tiles[ly] = [];
                         map.collisions[ly] = [];
                     }
-                    
+
                     for (let lx = x; lx < x + lakeSize && lx < width; lx++) {
                         map.tiles[ly][lx] = 1;
                         map.collisions[ly][lx] = 1;
@@ -733,7 +745,7 @@ generateForestMap() {
             }
         }
     }
-    
+
     return map;
 }
     

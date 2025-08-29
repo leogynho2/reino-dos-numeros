@@ -138,14 +138,16 @@ class SocketHandler {
                     
                     // Iniciar batalha
                     const battleId = await this.battleSystem.createBattle(player.id, npc.id, player.hp, 100);
-                    
+
                     // Enviar pergunta para o jogador
                     socket.emit('battle:start', {
                         battleId: battleId,
                         npcId: npc.id,
                         npcName: npc.name,
                         question: question.prompt,
-                        explanation: question.explanation
+                        explanation: question.explanation,
+                        npcHp: 100,
+                        npcMaxHp: 100
                     });
                     
                     // Atualizar missão de falar com NPC
@@ -227,11 +229,8 @@ class SocketHandler {
         // Verificar respawn de NPCs a cada 30 segundos
         setInterval(async () => {
             try {
-                await this.db.respawnNpcs();
-                
-                // Obter NPCs que respawnaram
-                const respawnedNpcs = await this.db.getRecentlyRespawnedNpcs();
-                
+                const respawnedNpcs = await this.db.respawnNpcs();
+
                 // Notificar jogadores sobre NPCs que respawnaram
                 for (const npc of respawnedNpcs) {
                     this.io.emit('npc:respawned', {
