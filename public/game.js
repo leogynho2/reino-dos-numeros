@@ -235,18 +235,26 @@ class Game {
         document.getElementById('login-modal').classList.add('hidden');
     }
     
-    showBattleModal(npcName, question) {
+    showBattleModal(npcName, question, playerHp, npcHp) {
         document.getElementById('battle-npc-name').textContent = `Desafio de ${npcName}`;
         document.getElementById('battle-question').textContent = question;
         document.getElementById('battle-answer').value = '';
         document.getElementById('battle-result').textContent = '';
         document.getElementById('battle-result').className = '';
         document.getElementById('battle-modal').classList.remove('hidden');
+
+        // Inicializar HPs
+        if (!this.currentBattle) this.currentBattle = {};
+        this.currentBattle.playerHp = playerHp;
+        this.currentBattle.npcHp = npcHp;
+        this.updateBattleHpUI();
+
         document.getElementById('battle-answer').focus();
     }
     
     hideBattleModal() {
         document.getElementById('battle-modal').classList.add('hidden');
+        this.currentBattle = null;
     }
     
     toggleMissionsModal() {
@@ -417,8 +425,10 @@ class Game {
     }
     
     handleBattleStart(data) {
-        this.showBattleModal(data.npcName, data.question);
+        data.playerHp = this.player ? this.player.hp : 0;
+        data.npcHp = 100;
         this.currentBattle = data;
+        this.showBattleModal(data.npcName, data.question, data.playerHp, data.npcHp);
     }
     
     handleBattleResult(data) {
@@ -449,7 +459,14 @@ class Game {
                     alert(`Parabéns! Você subiu para o nível ${newLevel}!`);
                 }
             }
-            
+
+            // Atualizar HPs da batalha
+            if (this.currentBattle) {
+                this.currentBattle.playerHp = this.player.hp;
+                this.currentBattle.npcHp = data.npcHp;
+                this.updateBattleHpUI();
+            }
+
             if (data.npcDefeated) {
                 setTimeout(() => {
                     this.hideBattleModal();
@@ -549,6 +566,24 @@ class Game {
         document.getElementById('player-wins').textContent = this.player.wins;
         document.getElementById('player-losses').textContent = this.player.losses;
         document.getElementById('player-coins').textContent = this.player.coins;
+    }
+
+    updateBattleHpUI() {
+        const npcBar = document.getElementById('battle-npc-hp');
+        const npcText = document.getElementById('battle-npc-hp-text');
+        const playerBar = document.getElementById('battle-player-hp');
+        const playerText = document.getElementById('battle-player-hp-text');
+
+        if (!npcBar || !playerBar || !this.currentBattle) return;
+
+        const npcPercent = (this.currentBattle.npcHp / 100) * 100;
+        npcBar.style.width = `${npcPercent}%`;
+        npcText.textContent = `${this.currentBattle.npcHp}/100`;
+
+        const playerMax = this.player ? this.player.max_hp : 100;
+        const playerPercent = (this.currentBattle.playerHp / playerMax) * 100;
+        playerBar.style.width = `${playerPercent}%`;
+        playerText.textContent = `${this.currentBattle.playerHp}/${playerMax}`;
     }
     
     interact() {
