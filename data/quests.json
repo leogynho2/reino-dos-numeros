@@ -1,0 +1,4 @@
+[
+  {"id":"q_kill_slime_3","title":"Três Gosmas","desc":"Derrote 3 slimes.","type":"kill","target":"slime","count":3,"reward":{"xp":30,"gold":10}},
+  {"id":"q_fetch_book","title":"Caderno Perdido","desc":"Encontre o caderno da Profª Ana.","type":"fetch","item":"caderno","count":1,"reward":{"xp":20,"gold":5}}
+]
